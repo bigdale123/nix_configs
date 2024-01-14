@@ -10,6 +10,13 @@
       ./hardware-configuration.nix
     ];
 
+  ## MY MAN!
+  # Make sure you check the electron version untill it becomes the next version & not insecure.
+  # Need this to make obsidian work though.
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-25.9.0"
+  ];
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -61,17 +68,24 @@
       extraPackages = with pkgs; [
         rofi
         i3status
+        i3lock
         feh
         alacritty
 	xarchiver
         blueman
         dunst
+        picom
+        neofetch
+        jp2a
+        lxappearance
       ];
     };
     
     layout = "us";
     xkbVariant = "";
   };
+  services.xscreensaver.enable = true;
+  services.picom.enable = true;
 
   environment.xfce.excludePackages = with pkgs.xfce; [
     xfce4-notifyd
@@ -104,7 +118,6 @@
     packages = with pkgs; [
       firefox
       discord
-      obsidian
       moonlight-qt
       seafile-client
       zoom-us
@@ -138,7 +151,9 @@
       cava
       prismlauncher
       audacity
-      john
+      obsidian
+      peek
+      prusa-slicer
     #  thunderbird
     ];
   };
@@ -192,6 +207,7 @@
   environment.interactiveShellInit = "
      alias loopback-enable='pactl load-module module-loopback latency_msec=1'
      alias loopback-disable='pactl unload-module module-loopback'
+     alias nix-config='sudo nano /etc/nixos/configuration.nix'
   ";
   environment.localBinInPath = true;
 
