@@ -4,22 +4,31 @@
 
 { config, pkgs, ... }:
 
+let unstableTarball = fetchTarball https://github.com/NixOS/nixpkgs/archive/nixos-unstable.tar.gz;
+in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
 
-  ## MY MAN!
-  # Make sure you check the electron version untill it becomes the next version & not insecure.
-  # Need this to make obsidian work though.
-  nixpkgs.config.permittedInsecurePackages = [
-    "electron-25.9.0"
-  ];
+  nixpkgs.config = {
+     allowUnfree = true;
+     packageOverrides = pkgs: {
+        unstable = import unstableTarball {
+            config = config.nixpkgs.config;
+          };
+      };
+  };
+
+  # Disable all forms of hibernation
+  systemd.targets.hibernate.enable = false;
+  systemd.targets.hybrid-sleep.enable = false;
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.kernelParams = [ "modprobe.blacklist=dvb_usb_rtl28xxu" ]; # blacklist this module
 
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
@@ -30,7 +39,7 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
-
+  networking.interfaces.enp5s0.useDHCP = false;
   # Set your time zone.
   time.timeZone = "America/Chicago";
 
@@ -70,8 +79,8 @@
         i3status
         i3lock
         feh
-        alacritty
-	xarchiver
+        unstable.alacritty
+        xarchiver
         blueman
         dunst
         picom
@@ -84,7 +93,6 @@
     layout = "us";
     xkbVariant = "";
   };
-  services.xscreensaver.enable = true;
   services.picom.enable = true;
 
   environment.xfce.excludePackages = with pkgs.xfce; [
@@ -104,6 +112,7 @@
   hardware.pulseaudio.enable = true;
   hardware.bluetooth.enable = true;
   hardware.bluetooth.powerOnBoot = true;
+  hardware.rtl-sdr.enable = true;
   services.blueman.enable = true;
   security.rtkit.enable = true;
 
@@ -114,59 +123,59 @@
   users.users.dylan = {
     isNormalUser = true;
     description = "Dylan";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "plugdev"];
     packages = with pkgs; [
       firefox
-      discord
+      unstable.discord
       moonlight-qt
       seafile-client
       zoom-us
-      openconnect
       libreoffice-still
       gimp
       gh
-      (vscode-with-extensions.override {
-         vscodeExtensions = with vscode-extensions; [
-           ms-vscode-remote.remote-ssh
-           ms-vscode.cmake-tools
-         ] ++ pkgs.vscode-utils.extensionsFromVscodeMarketplace [
-           {
-             name = "language-gas-x86";
-             publisher = "basdp";
-             version = "0.0.2";
-             sha256 = "3db5e13aca11d3fe705ee16bcf009c6ae335b8681f4284914e3d203d5559e0a8";
-           }
-           {
-             name = "sqlite-viewer";
-             publisher = "qwtel";
-             version = "0.3.13";
-             sha256 = "e47cb9305a13b93130c2c612b3aa036e8b3ad423c23588218e527e9cfaa44cab";
-           }
-         ];
-      })
-      spotifyd
-      spotify-tui
       spotify
       btop
       cava
       prismlauncher
       audacity
-      obsidian
+      unstable.obsidian
       peek
       prusa-slicer
-    #  thunderbird
+      vlc
+      rtl-sdr
+      sdrpp
+      sdrangel
     ];
   };
  
   fonts.packages = with pkgs; [
      nerdfonts
   ];
-  # Allow unfree packages
-  nixpkgs.config.allowUnfree = true;
+  
+  
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+     (pkgs.buildFHSUserEnv {
+        name = "devenv";
+        profile = ''
+           PS1="[\[\033[36m\]devenv\[\033[m\]] \w \$ "
+        '';
+        targetPkgs = pkgs: with pkgs; [
+           (python3.withPackages(ps: with ps; [
+              flask
+              sqlite
+              flask-cors
+              flask-wtf
+           ]))
+           gnumake
+           gcc
+           gdb
+           zulu
+        ];
+      }
+     )
      wget
      curl
      ocs-url
@@ -181,33 +190,25 @@
      pulseaudio
      git
      lxappearance
-     (python3.withPackages(ps: with ps; [
-        flask
-        sqlite
-        flask-cors
-        flask-wtf
-     ]))
      libnotify
-     gnumake
-     gcc
-     gdb
+     usbutils
      zip
      gzip
      unzip
-     gnutar     
+     gnutar
      qpdf
      killall
-     eigen
-     cmake
-     bison
-     flex
-     doxygen
+     neovim
+     zulu
+     winetricks
+     wineWowPackages.staging
   ];
 
   environment.interactiveShellInit = "
      alias loopback-enable='pactl load-module module-loopback latency_msec=1'
      alias loopback-disable='pactl unload-module module-loopback'
-     alias nix-config='sudo nano /etc/nixos/configuration.nix'
+     alias nixconfig='sudo nvim /etc/nixos/configuration.nix'
+     alias nixrebuild='sudo nixos-rebuild switch'
   ";
   environment.localBinInPath = true;
 
@@ -236,6 +237,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.05"; # Did you read the comment?
+  system.stateVersion = "unstable"; # Did you read the comment?
 
 }
