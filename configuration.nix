@@ -179,7 +179,7 @@ in
      wget
      curl
      ocs-url
-     wireguard-tools
+     tailscale
      tesseract
      imagemagick
      xsel
