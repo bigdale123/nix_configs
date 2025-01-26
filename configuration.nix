@@ -1,22 +1,29 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, ... }:{
+{ config, pkgs, ... }:
+let
+	home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+in
+{
 
 	imports = [ # Include the results of the hardware scan.
+		(import "${home-manager}/nixos")
 		./hardware-configuration.nix
-		./graphical.nix
-		./home-manager/home-manager.nix
 		./environment_sys_pkgs.nix
+		./users.nix
+		./i3.nix
+		./dunst.nix
+		./kitty.nix
 	];
+
+	home-manager.backupFileExtension = "bak";
 
 
 	boot.loader.systemd-boot.enable = true;
 	boot.loader.efi.canTouchEfiVariables = true;
 	boot.kernelParams = [
 		"modprobe.blacklist=dvb_usb_rtl28xxu"
+		"kvm.enable_virt_at_load=0"
 	];
+	boot.initrd.kernelModules = ["amdgpu" "kvm-amd" "kvm-intel"];
 	boot.initrd.systemd.network.wait-online.enable = false;
 
 	# Disable all forms of hibernation, totally optional
@@ -25,19 +32,23 @@
 
 	systemd.network.wait-online.enable = false;
 
-	# services.displayManager.defaultSession is in graphical.nix
-	# and so is services.picom.enable
-
 	services.tailscale.enable = true;
+
+	virtualisation.virtualbox.host = {
+		enable = true;
+	};
+	users.extraGroups.vboxusers.members = ["dylan"];
+	
 
 	# Enable CUPS
 	services.printing.enable = true;
 
 	services.blueman.enable = true;
-
-
-	hardware.pulseaudio.enable = true;
-	services.pipewire.enable = false;
+	services.flatpak.enable = true;
+	xdg.portal.enable = true; # Needed for flatpak
+	xdg.portal.extraPortals = [
+		pkgs.xdg-desktop-portal-gtk
+	];
 	hardware.bluetooth.enable = true;
 	hardware.bluetooth.powerOnBoot = true;
 	hardware.rtl-sdr.enable = true;
@@ -62,13 +73,15 @@
 		LC_TELEPHONE = "en_US.UTF-8";
 		LC_TIME = "en_US.UTF-8";
 	};
+
 	fonts.packages = with pkgs; [
-		nerdfonts
 		ezra-sil
-	];
+		libre-baskerville
+	] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
 
   	networking.hostName = "nixos";
 	networking.networkmanager.enable = true;
+	# below line is specific for thinkpad, remove for new machines
 	networking.interfaces.enp5s0.useDHCP = false;
 	networking.firewall.enable = false;
 

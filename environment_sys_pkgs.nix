@@ -1,10 +1,8 @@
 # Contains system packages definition and environment definitions
 { config, pkgs, ... }: {
-	virtualisation.virtualbox.host.enable = true;
-	users.extraGroups.vboxusers.members = [ "dylan" ];
 	environment = {
 		systemPackages = with pkgs; [
-			(pkgs.buildFHSUserEnv {
+			(pkgs.buildFHSEnv {
 				name = "fhs-env";
 				runscript = "bash";
 				targetPkgs = pkgs: with pkgs; [
@@ -19,7 +17,14 @@
 				flask-wtf
 				pyshark
 				requests
+				future
+				cryptography
+				pyopenssl
+				ndg-httpsclient
+				pyasn1
 			]))
+			cargo
+			rustc
 			conda
 			gnumake
 			gcc
@@ -34,9 +39,7 @@
 			xsel
 			maim
 			xclip
-			pavucontrol
 			mesa
-			pulseaudio
 			git
 			lxappearance
 			libnotify
@@ -55,12 +58,13 @@
 			virt-viewer
 			darktable
 			gnu-cobol
+			mpv
+			vagrant
 		];
 		interactiveShellInit = "
 			alias loopback-enable='pactl load-module module-loopback latency_msec=1'
 			alias loopback-disable='pactl unload-module module-loopback'
 		";
 		localBinInPath = true;
-
 	};	
 }
