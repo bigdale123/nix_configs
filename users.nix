@@ -1,9 +1,9 @@
 { config, lib, pkgs, ... }:
 {
-    users.users.dylan = {
+    	users.users.dylan = {
 		isNormalUser = true;
 		description = "Dylan";
-		extraGroups = ["networkmanager" "wheel" "plugdev" "vboxusers"];
+		extraGroups = ["networkmanager" "wheel" "plugdev" "vboxusers" "video"];
 	};
 	
 	
@@ -26,6 +26,7 @@
 			audacity
 			obsidian
 			peek
+			fastfetch
 			prusa-slicer
 			vlc
 			rtl-sdr
@@ -54,7 +55,6 @@
 					}
 				];
 			})
-			postman
 			cool-retro-term
 			cbonsai
 		];

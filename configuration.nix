@@ -1,11 +1,8 @@
 { config, pkgs, ... }:
-let
-	home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
-in
 {
 
 	imports = [ # Include the results of the hardware scan.
-		(import "${home-manager}/nixos")
+		<home-manager/nixos>
 		./hardware-configuration.nix
 		./environment_sys_pkgs.nix
 		./users.nix
@@ -23,14 +20,29 @@ in
 		"modprobe.blacklist=dvb_usb_rtl28xxu"
 		"kvm.enable_virt_at_load=0"
 	];
-	boot.initrd.kernelModules = ["amdgpu" "kvm-amd" "kvm-intel"];
+	boot.kernelModules = ["amdgpu"];
+	boot.initrd.kernelModules = ["kvm-amd"];
+	
+	boot.crashDump.enable = true;
+	boot.kernel.sysctl."kernel.panic_on_oops" = 1;
+
+	# graphics troubleshooting bullshit
+	hardware.graphics = {
+		enable = true;
+	};
+
+	# Fix for "Rebuild Error - Failed to start Network Manager Wait Online"
+	systemd.network.wait-online.enable = false;
 	boot.initrd.systemd.network.wait-online.enable = false;
+
+	# Kernel Version Setting
+	boot.kernelPackages = pkgs.linuxPackages_6_6;
 
 	# Disable all forms of hibernation, totally optional
 	systemd.targets.hibernate.enable = false;
 	systemd.targets.hybrid-sleep.enable = false;
 
-	systemd.network.wait-online.enable = false;
+	
 
 	services.tailscale.enable = true;
 
@@ -40,8 +52,9 @@ in
 	users.extraGroups.vboxusers.members = ["dylan"];
 	
 
-	# Enable CUPS
+	# Enable CUPS (Printing)
 	services.printing.enable = true;
+	services.printing.drivers = [ pkgs.pantum-driver ];
 
 	services.blueman.enable = true;
 	services.flatpak.enable = true;
@@ -84,6 +97,7 @@ in
 	# below line is specific for thinkpad, remove for new machines
 	networking.interfaces.enp5s0.useDHCP = false;
 	networking.firewall.enable = false;
+	# networking.networkmanager.dns = "none";
 
 	nixpkgs.config.allowUnfree = true;
 	nix.settings.experimental-features = [ "nix-command" "flakes"];

@@ -10,11 +10,18 @@
 				enable = true;
 				noDesktop = true;
 				enableXfwm = false;
-				enableScreensaver = true;
+				enableScreensaver = false;
 			};
 		};
-		videoDrivers = [ "amdgpu" ];
-		displayManager.gdm.enable = true;
+		videoDrivers = [ "mesa" ];
+		displayManager.lightdm = {
+			enable = true;
+			background = "/etc/nixos/wallpapers/tv_severance_lumon.png";
+			greeter.enable = true;
+			greeters.slick = {
+				enable = true;
+			};
+		};
 		windowManager.i3 = {
 			enable = true;
 			extraPackages = with pkgs; [
@@ -26,13 +33,13 @@
 				xarchiver
 				blueman
 				dunst
-				picom
 				discord
-				neofetch
 				jp2a
 				lxappearance
 				xkb-switch
+				picom
 				pavucontrol
+				xcolor
 			];
 		};
 		xkb = {
@@ -41,15 +48,17 @@
 		};
 	};
 	services.displayManager.defaultSession = "xfce+i3";
-	services.picom.enable = true;
 
-	hardware.pulseaudio = {
+	services.pulseaudio = {
 		enable = true;
 		support32Bit = true;
 	};
+	services.pipewire.enable = false;
 
 	environment.xfce.excludePackages = with pkgs.xfce; [
 		xfce4-notifyd
+		xfce4-volumed-pulse # So that i3 can handle it, allowing for customization
+		xfce4-pulseaudio-plugin # ditto the above
 	];
 
 	programs.thunar.plugins = with pkgs.xfce; [
@@ -60,13 +69,7 @@
 	home-manager.users.dylan = {
 		xsession.windowManager.i3 =
 		let
-			bgcolor = "#00ff8333";
-                        inactive-bgcolor = "#1854294d";
-                        active-bgcolor = "#00cc694d";
-                        text = "#6b54a6";
-                        u-bgcolor = "#ffc603";
-                        indicator = "#99ffcd";
-                        inactive-text = "#403264";
+			wallpaper = "/etc/nixos/wallpapers/tv_severance_lumon.png";
 		in {
 			enable = true;
 			package = pkgs.i3;
@@ -76,10 +79,6 @@
 					{
 						command = "nm-applet";
 						always = false;
-					}
-					{
-						command = "picom";
-						always = true;
 					}
 					{
 						command = "dunst -config ~/.config/dunst/dunstrc";
@@ -94,7 +93,7 @@
 						always = false;
 					}
 					{
-						command = "feh --bg-scale /etc/nixos/wallpapers/triop.png";
+						command = "feh --bg-scale ${wallpaper}";
 						always = true;
 					}
 				];
@@ -111,61 +110,74 @@
 						command = "${pkgs.i3}/bin/i3bar -t";
 						statusCommand = "i3status";
 						colors = {
-							background = "${bgcolor}";
-							separator = "${text}";
+							background = "#0f151d";
+							statusline = "#dee9ee";
+							separator = "#dee9ee";
 							focusedWorkspace = {
-								background = "${inactive-bgcolor}";
-								border = "${inactive-bgcolor}";
-								text = "${text}";
+								border = "#93acc3";
+								background = "#024d81";
+								text = "#dee9ee";
 							};
-							activeWorkspace = {
-								background = "${inactive-bgcolor}";
-                                                                border = "${inactive-bgcolor}";
-                                                                text = "${text}";
-							};
-							inactiveWorkspace = {
-								background = "${bgcolor}";
-                                                                border = "${bgcolor}";
-                                                                text = "${text}";
-							};
-							urgentWorkspace = {
-								background = "${u-bgcolor}";
-                                                                border = "${u-bgcolor}";
-                                                                text = "${text}";
-							};
+							activeWorkspace = {  
+                                                                border = "#2f343a";
+                                                                background = "#1d2735";
+                                                                text = "#dee9ee";
+                                                        };
+							inactiveWorkspace = {  
+                                                                border = "#2f343a";
+                                                                background = "#1d2735";
+                                                                text = "#56769f";
+                                                        };
+							urgentWorkspace = {  
+                                                                border = "#2f343a";
+                                                                background = "#db504a";
+                                                                text = "#dee9ee";
+                                                        };
+							bindingMode = {  
+                                                                border = "#2f343a";
+                                                                background = "#db504a";
+                                                                text = "#dee9ee";
+                                                        };
 						};
-						
 					}
 				];
 				colors = {
 					focused = {
-						background = "${bgcolor}";
-						border = "${bgcolor}";
-						indicator = "${indicator}";
-						text = "${text}";
-						childBorder = "${bgcolor}";
+						border = "#93acc3";
+						background = "#024d81";
+						text = "#dee9ee";
+						indicator = "#F9B9F2";
+						childBorder = "#024d81";
 					};
-					unfocused = {
-						background = "${inactive-bgcolor}";
-						border = "${inactive-bgcolor}";
-						indicator = "${inactive-bgcolor}";
-						text = "${inactive-text}";
-						childBorder = "${inactive-bgcolor}";
-					};
-					focusedInactive = {
-						background = "${inactive-bgcolor}";
-						border = "${inactive-bgcolor}";
-						indicator = "${inactive-bgcolor}";
-						text = "${inactive-text}";
-						childBorder = "${inactive-bgcolor}";
-					};
-					urgent = {
-						background = "${u-bgcolor}";
-						border = "${u-bgcolor}";
-						indicator = "${u-bgcolor}";
-						text = "${text}";
-						childBorder = "${u-bgcolor}";
-					};
+					focusedInactive = {  
+                                                border = "#10161e";
+                                                background = "#93acc3";
+                                                text = "#10161e";
+                                                indicator = "#F9B9F2";
+                                                childBorder = "#93acc3";
+                                        };
+					unfocused = {  
+                                                border = "#333333";
+                                                background = "#222222";
+                                                text = "#56769f";
+                                                indicator = "#F9B9F2";
+                                                childBorder = "#222222";
+                                        };
+					urgent = {  
+                                                border = "#2f344a";
+                                                background = "#db504a";
+                                                text = "#dee9ee";
+                                                indicator = "#F9B9F2";
+                                                childBorder = "#db504a";
+                                        };
+					placeholder = {  
+                                                border = "#0e141b";
+                                                background = "#oe141b";
+                                                text = "#dee9ee";
+                                                indicator = "#F9B9F2";
+                                                childBorder = "#oe141b";
+                                        };
+					background = "#dee9ee";
 				};
 				fonts = {
 					names = ["hack"];
@@ -182,16 +194,30 @@
 					"${modifier}+Shift+s" = "exec --no-startup-id maim -s -u | tee ~/Screenshots/$(date +'%Y-%m-%d_%H-%M-%S').png | xclip -selection clipboard -t image/png";
 					"${modifier}+Ctrl+Shift+h" = "exec \"setxkbmap -layout us,il -variant ,biblical && xkb-switch -s 'il(biblical)' && notify-send 'Hebrew Mode'\"";
 					"${modifier}+Ctrl+Shift+u" = "exec \"setxkbmap -layout us,il -variant ,biblical && xkb-switch -s us && notify-send 'America Mode'\"";
-					"${modifier}+Ctrl+Shift+period" = "move workspace to output right";
-					"${modifier}+Ctrl+Shift+comma" = "move workspace to output left";
+					"${modifier}+Ctrl+Shift+Right" = "move workspace to output right";
+					"${modifier}+Ctrl+Shift+Left" = "move workspace to output left";
+					"XF86AudioRaiseVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ +1%";
+					"XF86AudioLowerVolume" = "exec pactl set-sink-volume @DEFAULT_SINK@ -1%";
+					"XF86AudioMute" = "exec pactl set-sink-mute @DEFAULT_SINK@ toggle";
+					"${modifier}+Shift+c" = "exec xcolor -s";
 				};
 			};
 		};
 		programs.i3status = {
 			enable = true;
+			general = {
+				colors = true;
+				color_good = "#dee9ee";
+				color_degraded = "#e3b505";
+				color_bad = "#db504a";
+				interval = 1;
+			};
 			modules = {
+				"ipv6" = {
+					enable = false;
+				};	
 				"wireless _first_" = {
-                                        enable = true;
+                                        enable = false;
                                         position = 0;
                                         settings = {
 						format_up = "W: (%quality at %essid) %ip";
@@ -199,7 +225,7 @@
                                         };
                                 };
 				"ethernet _first_" = {
-                                        enable = true;
+                                        enable = false;
                                         position = 1;
                                         settings = {
 						format_up = "E: %ip (%speed)";
@@ -224,7 +250,7 @@
 					};
 				};
 				"disk /" = {
-                                        enable = true;
+                                        enable = false;
                                         position = 4;
                                         settings = {
                                                 format = "%avail";
@@ -238,7 +264,7 @@
                                         };
                                 };
 				"cpu_usage" = {
-					enable = true;
+					enable = false;
 					position = 6;
 					settings = {
 						format = "%usage";
@@ -246,7 +272,7 @@
 					};
 				};
 				"memory" = {
-					enable = true;
+					enable = false;
 					position = 7;
 					settings = {
 						format = "%available";
@@ -263,5 +289,9 @@
 				};
 			};
 		};
+		services.picom.enable = true;
+		services.picom.opacityRules = [
+			"100:window_type = 'tooltip'"
+		];
 	};
 }

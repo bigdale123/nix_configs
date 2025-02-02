@@ -6,7 +6,7 @@
 			settings = {
 				confirm_os_window_close = 0;
 				cursor_blink_interval = "0.5 ease-in-out";
-				background_opacity = .75;
+				background_opacity = 0.85;
 			};
 		};		
 	};

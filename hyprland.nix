@@ -27,6 +27,7 @@
 			networkmanagerapplet
 			glib
 			wireplumber
+			pwvucontrol
 		];
 	};
 	programs.thunar.plugins = with pkgs.xfce; [
@@ -96,6 +97,7 @@
 				## User Binds
 				"$mod, s, hy3:changegroup, toggletab"
 				"$mod_SHIFT, s, exec, grim -g \"$(slurp)\" - | wl-copy"
+				"$mod_SHIFT, c, exec, hyprpicker -a"
 				"$mod_CTRL_SHIFT, h, exec, setxkbmap -layout us,il -variant ,biblical && xkb-switch -s 'il(biblical)' && notify-send 'Hebrew Mode'"
 				"$mod_CTRL_SHIFT, u, exec, setxkbmap -layout us,il -variant ,biblical && xkb-switch -s us && notify-send 'America Mode'"
 				# Navigation
@@ -145,22 +147,16 @@
 				"nofocus, class:^(xwaylandvideobridge)$"
 			];
 		};
-		programs.waybar = let
-			height = 15;
-		in {
+		programs.waybar = {
 			enable = true;
 			settings = {
 				mainBar = {
-					height = height;
+					height = 15;
 					layer = "top";
 					position = "top";
 					modules-left = ["hyprland/workspaces"];
 					modules-center = ["clock"];
 					modules-right = ["wireplumber" "tray"];
-
-					tray = {
-						icon-size = 15;
-					};
 				};
 			};
 		};
@@ -174,8 +170,8 @@
 		gtk = {
 			enable = true;
 			theme = {
-				name = "Yaru";
-				package = pkgs.yaru-theme;
+				name = "Graphite";
+				package = pkgs.graphite-gtk-theme;
 			};
 			gtk3.extraConfig = {
       				gtk-application-prefer-dark-theme = true;
